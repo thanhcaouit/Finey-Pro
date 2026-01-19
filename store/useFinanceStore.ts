@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Transaction, Account, AccountGroup, CategoryGroup, Category, FinanceState, Label, AppSettings } from '../types';
 import { INITIAL_ACCOUNTS, INITIAL_ACCOUNT_GROUPS, INITIAL_CATEGORY_GROUPS, INITIAL_CATEGORIES, INITIAL_TRANSACTIONS, INITIAL_LABELS } from '../constants';
 
-const STORAGE_KEY = 'bluefinance_pro_data_v10'; // Tăng version để tránh dữ liệu cũ bị xung đột
+const STORAGE_KEY = 'bluefinance_pro_data_v11'; 
 
 const generateId = () => {
   try {
@@ -51,7 +51,6 @@ export const useFinanceStore = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Kiểm tra tính toàn vẹn cơ bản của dữ liệu nạp vào
         if (parsed && Array.isArray(parsed.accounts) && Array.isArray(parsed.transactions)) {
           return parsed;
         }
@@ -183,14 +182,22 @@ export const useFinanceStore = () => {
     const id = generateId();
     setState(prev => {
       const initTransaction: Transaction = { id: generateId(), date: new Date().toISOString(), amount: account.balanceStart, type: 'Income', categoryId: 'cat-13', accountId: id, note: `Số dư đầu: ${account.name}`, labels: [], status: 'Reconciled' };
-      const updatedAccounts = [...prev.accounts, { ...account, id, balanceNew: account.balanceStart }];
+      const updatedAccounts = [...prev.accounts, { ...account, id, balanceNew: account.balanceStart, showInSelection: account.showInSelection ?? true }];
       const updatedTransactions = [initTransaction, ...prev.transactions];
       return { ...prev, accounts: recalculateBalances(updatedTransactions, updatedAccounts), transactions: updatedTransactions };
     });
   }, []);
 
-  const updateAccount = useCallback((id: string, updates: Partial<Account>) => setState(prev => ({ ...prev, accounts: prev.accounts.map(a => a.id === id ? { ...a, ...updates } : a) })), []);
-  const deleteAccount = useCallback((id: string) => setState(prev => ({ ...prev, accounts: prev.accounts.filter(a => a.id !== id) })), []);
+  const updateAccount = useCallback((id: string, updates: Partial<Account>) => {
+    setState(prev => {
+      const updatedAccountsList = prev.accounts.map(a => a.id === id ? { ...a, ...updates } : a);
+      return { ...prev, accounts: recalculateBalances(prev.transactions, updatedAccountsList) };
+    });
+  }, []);
+
+  const deleteAccount = useCallback((id: string) => {
+    setState(prev => ({ ...prev, accounts: prev.accounts.filter(a => a.id !== id) }));
+  }, []);
 
   const addCategory = useCallback((cat: Omit<Category, 'id'>) => setState(prev => ({ ...prev, categories: [...prev.categories, { ...cat, id: generateId() }] })), []);
   const updateCategory = useCallback((id: string, updates: Partial<Category>) => setState(prev => ({ ...prev, categories: prev.categories.map(c => c.id === id ? { ...c, ...updates } : c) })), []);
@@ -198,7 +205,14 @@ export const useFinanceStore = () => {
 
   const addAccountGroup = useCallback((g: Omit<AccountGroup, 'id'>) => setState(prev => ({ ...prev, accountGroups: [...prev.accountGroups, { ...g, id: generateId() }] })), []);
   const updateAccountGroup = useCallback((id: string, u: Partial<AccountGroup>) => setState(prev => ({ ...prev, accountGroups: prev.accountGroups.map(g => g.id === id ? { ...g, ...u } : g) })), []);
-  const deleteAccountGroup = useCallback((id: string) => setState(prev => ({ ...prev, accountGroups: prev.accountGroups.filter(g => g.id !== id) })), []);
+  const deleteAccountGroup = useCallback((id: string) => setState(prev => {
+    const remainingGroups = prev.accountGroups.filter(g => g.id !== id);
+    // Di chuyển các tài khoản mồ côi về nhóm đầu tiên nếu còn, hoặc giữ nguyên nhưng gắn ID null
+    const updatedAccounts = prev.accounts.map(acc => 
+      acc.groupId === id ? { ...acc, groupId: remainingGroups[0]?.id || '' } : acc
+    );
+    return { ...prev, accountGroups: remainingGroups, accounts: updatedAccounts };
+  }), []);
 
   const addCategoryGroup = useCallback((g: Omit<CategoryGroup, 'id'>) => setState(prev => ({ ...prev, categoryGroups: [...prev.categoryGroups, { ...g, id: generateId() }] })), []);
   const updateCategoryGroup = useCallback((id: string, u: Partial<CategoryGroup>) => setState(prev => ({ ...prev, categoryGroups: prev.categoryGroups.map(g => g.id === id ? { ...g, ...u } : g) })), []);

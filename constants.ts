@@ -12,16 +12,16 @@ export const INITIAL_ACCOUNT_GROUPS: AccountGroup[] = [
 ];
 
 export const INITIAL_ACCOUNTS: Account[] = [
-  { id: 'acc-1', groupId: 'ag-1', name: 'Bất động sản', description: 'Bất động sản', dateStart: '2023-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-2', groupId: 'ag-2', name: 'Tiết kiệm', description: 'Tiết kiệm 1', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-3', groupId: 'ag-2', name: 'Tiết kiệm 2', description: 'Tiết kiệm 2', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-4', groupId: 'ag-3', name: 'Phải thu 1', description: 'Phải thu 1', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-5', groupId: 'ag-4', name: 'Ví', description: 'Tiền mặt', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-6', groupId: 'ag-4', name: 'Thẻ', description: 'Thẻ ngân hàng', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-7', groupId: 'ag-5', name: 'Vàng', description: 'Vàng', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-8', groupId: 'ag-5', name: 'Chứng Khoán Ba', description: 'Chứng Khoán Ba', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-9', groupId: 'ag-6', name: 'Thẻ tín dụng', description: 'Thẻ 1', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
-  { id: 'acc-10', groupId: 'ag-7', name: 'Thế chấp nhà', description: 'Thế chấp nhà', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false },
+  { id: 'acc-1', groupId: 'ag-1', name: 'Bất động sản', description: 'Bất động sản', dateStart: '2023-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-2', groupId: 'ag-2', name: 'Tiết kiệm', description: 'Tiết kiệm 1', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-3', groupId: 'ag-2', name: 'Tiết kiệm 2', description: 'Tiết kiệm 2', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-4', groupId: 'ag-3', name: 'Phải thu 1', description: 'Phải thu 1', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-5', groupId: 'ag-4', name: 'Ví', description: 'Tiền mặt', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-6', groupId: 'ag-4', name: 'Thẻ', description: 'Thẻ ngân hàng', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-7', groupId: 'ag-5', name: 'Vàng', description: 'Vàng', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-8', groupId: 'ag-5', name: 'Chứng Khoán Ba', description: 'Chứng Khoán Ba', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-9', groupId: 'ag-6', name: 'Thẻ tín dụng', description: 'Thẻ 1', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
+  { id: 'acc-10', groupId: 'ag-7', name: 'Thế chấp nhà', description: 'Thế chấp nhà', dateStart: '2025-01-01', balanceStart: 0, balanceNew: 0, currency: 'VND', note: '', selectInAsset: false, selectAssetAndReport: false, showInSelection: true },
 ];
 
 export const INITIAL_CATEGORY_GROUPS: CategoryGroup[] = [

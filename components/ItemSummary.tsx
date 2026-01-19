@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Transaction, Category, CategoryGroup, Account, Label, AppSettings } from '../types';
+import { Transaction, Category, CategoryGroup, Account, AccountGroup, Label, AppSettings } from '../types';
 import TransactionList from './TransactionList';
 import TransactionForm from './TransactionForm';
 
@@ -8,6 +8,7 @@ interface Props {
   transactions: Transaction[];
   categories: Category[];
   categoryGroups: CategoryGroup[];
+  accountGroups: AccountGroup[];
   accounts: Account[];
   labels: Label[];
   settings: AppSettings;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const ItemSummary: React.FC<Props> = ({ 
-  transactions, categories, categoryGroups, accounts, labels, settings,
+  transactions, categories, categoryGroups, accountGroups, accounts, labels, settings,
   onUpdateTransaction, onDeleteTransaction 
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 1));
@@ -202,11 +203,11 @@ const ItemSummary: React.FC<Props> = ({
 
       {/* Shared Transaction Form for drill-down editing */}
       {editingTransaction && (
-        // Added missing required settings prop for TransactionForm
         <TransactionForm 
           categories={categories}
           accounts={accounts}
           categoryGroups={categoryGroups}
+          accountGroups={accountGroups}
           labels={labels}
           settings={settings}
           initialTransaction={editingTransaction}

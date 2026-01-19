@@ -31,6 +31,7 @@ export interface Account {
   note: string;
   selectInAsset: boolean;
   selectAssetAndReport: boolean;
+  showInSelection: boolean; // Thuộc tính mới
 }
 
 export type CategoryGroupType = 'Income' | 'Outcome' | 'Transfer' | 'New Account';

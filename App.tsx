@@ -38,6 +38,13 @@ const App: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('DASHBOARD');
 
+  // Quản lý trạng thái menu FAB khi ở các tab đặc biệt
+  const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
+  const [isAddingAccountModal, setIsAddingAccountModal] = useState(false);
+  const [isAddingAccountGroupModal, setIsAddingAccountGroupModal] = useState(false);
+  const [isAddingCategoryModal, setIsAddingCategoryModal] = useState(false);
+  const [isAddingCategoryGroupModal, setIsAddingCategoryGroupModal] = useState(false);
+
   const primaryNavItems = [
     { id: 'DASHBOARD', label: 'Tổng quan', icon: '📊', shortLabel: 'Dashboard' },
     { id: 'TRANSACTIONS', label: 'Giao dịch', icon: '📝', shortLabel: 'Trans' },
@@ -55,6 +62,9 @@ const App: React.FC = () => {
     { id: 'TRASH', label: 'Thùng rác', icon: '🗑️' },
     { id: 'SETTINGS', label: 'Cài đặt', icon: '⚙️' },
   ];
+
+  // Kiểm tra xem Tab hiện tại có phải là tab chính hay không
+  const isPrimaryTab = primaryNavItems.some(item => item.id === activeTab);
 
   const handleEditTransaction = (t: Transaction) => {
     setEditingTransaction(t);
@@ -85,6 +95,16 @@ const App: React.FC = () => {
     }
     setIsFormOpen(false);
     setEditingTransaction(null);
+  };
+
+  // Hàm xử lý khi bấm vào nút FAB duy nhất
+  const handleFabClick = () => {
+    if (activeTab === 'ACCOUNTS' || activeTab === 'CATEGORY_BUDGET') {
+      setIsFabMenuOpen(!isFabMenuOpen);
+    } else {
+      setEditingTransaction(null);
+      setIsFormOpen(true);
+    }
   };
 
   const currentTabLabel = [...primaryNavItems, ...secondaryNavItems].find(i => i.id === activeTab)?.label;
@@ -214,44 +234,102 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        {/* SCROLLABLE VIEWPORT */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-6xl mx-auto pt-20 pb-32 md:pt-4 md:pb-8 scroll-smooth">
+        {/* SCROLLABLE VIEWPORT - Padding thay đổi theo Bottom Bar */}
+        <main className={`flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-6xl mx-auto pt-20 scroll-smooth ${isPrimaryTab ? 'pb-32' : 'pb-24'} md:pt-4 md:pb-8`}>
           {activeTab === 'DASHBOARD' && <Dashboard transactions={transactions} accounts={accounts} categoryGroups={categoryGroups} accountGroups={accountGroups} />}
           {activeTab === 'TRANSACTIONS' && <TransactionList transactions={transactions} categories={categories} accounts={accounts} labels={labels} onDelete={deleteTransaction} onEdit={handleEditTransaction} />}
-          {activeTab === 'ACCOUNTS' && <AccountManagement accounts={accounts} groups={accountGroups} onAddAccount={addAccount} onUpdateAccount={updateAccount} onDeleteAccount={deleteAccount} onAddGroup={addAccountGroup} onUpdateGroup={updateAccountGroup} onDeleteGroup={deleteAccountGroup} />}
-          {activeTab === 'CATEGORY_BUDGET' && <CategoryManagement categories={categories} groups={categoryGroups} transactions={transactions} accounts={accounts} labels={labels} categoryGroups={categoryGroups} settings={settings} onAddCategory={addCategory} onUpdateCategory={updateCategory} onDeleteCategory={deleteCategory} onAddGroup={addCategoryGroup} onUpdateGroup={updateCategoryGroup} onDeleteGroup={deleteCategoryGroup} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
-          {activeTab === 'ITEMS_SUMMARY' && <ItemSummary transactions={transactions} categories={categories} categoryGroups={categoryGroups} accounts={accounts} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
-          {activeTab === 'LABELS_SUMMARY' && <LabelsSummary transactions={transactions} categories={categories} categoryGroups={categoryGroups} accounts={accounts} labels={labels} settings={settings} onAddLabel={addLabel} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
+          {activeTab === 'ACCOUNTS' && (
+            <AccountManagement 
+              accounts={accounts} 
+              groups={accountGroups} 
+              onAddAccount={addAccount} onUpdateAccount={updateAccount} onDeleteAccount={deleteAccount} 
+              onAddGroup={addAccountGroup} onUpdateGroup={updateAccountGroup} onDeleteGroup={deleteAccountGroup}
+              externalAddAccount={isAddingAccountModal} setExternalAddAccount={setIsAddingAccountModal}
+              externalAddGroup={isAddingAccountGroupModal} setExternalAddGroup={setIsAddingAccountGroupModal}
+            />
+          )}
+          {activeTab === 'CATEGORY_BUDGET' && (
+            <CategoryManagement 
+              categories={categories} groups={categoryGroups} transactions={transactions} accounts={accounts} labels={labels} 
+              accountGroups={accountGroups} categoryGroups={categoryGroups} settings={settings} 
+              onAddCategory={addCategory} onUpdateCategory={updateCategory} onDeleteCategory={deleteCategory} 
+              onAddGroup={addCategoryGroup} onUpdateGroup={updateCategoryGroup} onDeleteGroup={deleteCategoryGroup} 
+              onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction}
+              externalAddCategory={isAddingCategoryModal} setExternalAddCategory={setIsAddingCategoryModal}
+              externalAddGroup={isAddingCategoryGroupModal} setExternalAddGroup={setIsAddingCategoryGroupModal}
+            />
+          )}
+          {activeTab === 'ITEMS_SUMMARY' && <ItemSummary transactions={transactions} categories={categories} categoryGroups={categoryGroups} accountGroups={accountGroups} accounts={accounts} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
+          {activeTab === 'LABELS_SUMMARY' && <LabelsSummary transactions={transactions} categories={categories} categoryGroups={categoryGroups} accountGroups={accountGroups} accounts={accounts} labels={labels} settings={settings} onAddLabel={addLabel} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
           {activeTab === 'BALANCE_SHEET' && <BalanceSheet accounts={accounts} accountGroups={accountGroups} transactions={transactions} categories={categories} categoryGroups={categoryGroups} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
-          {activeTab === 'BUDGET_SUMMARY' && <BudgetSummary transactions={transactions} categories={categories} categoryGroups={categoryGroups} accounts={accounts} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
-          {activeTab === 'NET_EARNINGS' && <NetEarnings transactions={transactions} categories={categories} categoryGroups={categoryGroups} accounts={accounts} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
+          {activeTab === 'BUDGET_SUMMARY' && <BudgetSummary transactions={transactions} categories={categories} categoryGroups={categoryGroups} accountGroups={accountGroups} accounts={accounts} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
+          {activeTab === 'NET_EARNINGS' && <NetEarnings transactions={transactions} categories={categories} categoryGroups={categoryGroups} accountGroups={accountGroups} accounts={accounts} labels={labels} settings={settings} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
           {activeTab === 'TRASH' && <Trash transactions={deletedTransactions} categories={categories} accounts={accounts} labels={labels} onRestore={restoreTransaction} onEmpty={emptyTrash} onDeletePermanently={permanentlyDeleteTransaction} onViewDetail={handleViewTrashDetail} />}
           {activeTab === 'SETTINGS' && <Settings settings={settings} onUpdate={updateSettings} onResetData={resetTransactions} />}
           {activeTab === 'USER' && <UserProfile />}
         </main>
 
-        {/* BOTTOM NAVIGATION (Mobile only) */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around items-center px-2 py-3 z-50 shadow-lg">
-          {primaryNavItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeTab === item.id ? 'text-blue-600 scale-110' : 'text-gray-400'}`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span className="text-[9px] font-black uppercase tracking-tighter">{item.shortLabel}</span>
-            </button>
-          ))}
-        </nav>
+        {/* BOTTOM NAVIGATION - Chỉ hiển thị khi ở các tab chính */}
+        {isPrimaryTab && (
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around items-center px-2 py-3 z-50 shadow-lg animate-in slide-in-from-bottom duration-300">
+            {primaryNavItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => { setActiveTab(item.id as any); setIsFabMenuOpen(false); }}
+                className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeTab === item.id ? 'text-blue-600 scale-110' : 'text-gray-400'}`}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span className="text-[9px] font-black uppercase tracking-tighter">{item.shortLabel}</span>
+              </button>
+            ))}
+          </nav>
+        )}
 
-        {/* FAB (Floating Action Button) */}
-        {['TRANSACTIONS', 'DASHBOARD', 'BUDGET_SUMMARY', 'BALANCE_SHEET'].includes(activeTab) && (
+        {/* SINGLE FAB - DUY NHẤT VÀ ĐỒNG BỘ - Tự động hạ thấp khi không có Bottom Bar */}
+        <div className={`fixed ${isPrimaryTab ? 'bottom-[5.5rem]' : 'bottom-6'} md:bottom-10 right-6 flex flex-col items-end gap-3 z-[150] transition-all duration-300`}>
+          {isFabMenuOpen && activeTab === 'ACCOUNTS' && (
+            <div className="flex flex-col items-end gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+               <button 
+                onClick={() => { setIsAddingAccountGroupModal(true); setIsFabMenuOpen(false); }}
+                className="bg-white px-6 py-3 rounded-2xl shadow-2xl border border-gray-100 font-black text-[11px] uppercase tracking-widest flex items-center gap-3 text-gray-700"
+              >
+                Thêm Nhóm 📁
+              </button>
+              <button 
+                onClick={() => { setIsAddingAccountModal(true); setIsFabMenuOpen(false); }}
+                className="bg-white px-6 py-3 rounded-2xl shadow-2xl border border-gray-100 font-black text-[11px] uppercase tracking-widest flex items-center gap-3 text-gray-700"
+              >
+                Thêm Tài Khoản 🏦
+              </button>
+            </div>
+          )}
+          {isFabMenuOpen && activeTab === 'CATEGORY_BUDGET' && (
+            <div className="flex flex-col items-end gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+               <button 
+                onClick={() => { setIsAddingCategoryGroupModal(true); setIsFabMenuOpen(false); }}
+                className="bg-white px-6 py-3 rounded-2xl shadow-2xl border border-gray-100 font-black text-[11px] uppercase tracking-widest flex items-center gap-3 text-gray-700"
+              >
+                Thêm Nhóm 📁
+              </button>
+              <button 
+                onClick={() => { setIsAddingCategoryModal(true); setIsFabMenuOpen(false); }}
+                className="bg-white px-6 py-3 rounded-2xl shadow-2xl border border-gray-100 font-black text-[11px] uppercase tracking-widest flex items-center gap-3 text-gray-700"
+              >
+                Thêm Danh Mục 🛍️
+              </button>
+            </div>
+          )}
+          
           <button 
-            onClick={() => { setEditingTransaction(null); setIsFormOpen(true); }} 
-            className="fixed bottom-24 md:bottom-10 right-6 w-14 h-14 bg-[#FF5722] text-white rounded-full shadow-[0_10px_25px_-5px_rgba(255,87,34,0.4)] flex items-center justify-center ring-4 ring-white z-[45] active:scale-90 transition-transform"
+            onClick={handleFabClick}
+            className={`w-14 h-14 rounded-full shadow-[0_10px_25px_-5px_rgba(255,87,34,0.5)] flex items-center justify-center ring-4 ring-white active:scale-90 transition-all ${isFabMenuOpen ? 'bg-gray-800 rotate-45' : 'bg-[#FF5722]'}`}
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4"></path></svg>
           </button>
+        </div>
+
+        {isFabMenuOpen && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[140] animate-in fade-in duration-200" onClick={() => setIsFabMenuOpen(false)} />
         )}
       </div>
 
@@ -274,6 +352,7 @@ const App: React.FC = () => {
           categories={categories} 
           accounts={accounts} 
           categoryGroups={categoryGroups} 
+          accountGroups={accountGroups}
           labels={labels} 
           settings={settings} 
           initialTransaction={editingTransaction || undefined} 
@@ -288,6 +367,7 @@ const App: React.FC = () => {
           categories={categories} 
           accounts={accounts} 
           categoryGroups={categoryGroups} 
+          accountGroups={accountGroups}
           labels={labels} 
           settings={settings} 
           initialTransaction={viewingTrashItem} 

@@ -156,11 +156,11 @@ const BalanceSheet: React.FC<Props> = ({
 
       {/* Sub-modal for editing transaction */}
       {editingTransaction && (
-        // Added missing required settings prop for TransactionForm
         <TransactionForm 
           categories={categories}
           accounts={accounts}
           categoryGroups={categoryGroups}
+          accountGroups={accountGroups}
           labels={labels}
           settings={settings}
           initialTransaction={editingTransaction}
