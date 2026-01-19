@@ -5,6 +5,13 @@ import { INITIAL_ACCOUNTS, INITIAL_ACCOUNT_GROUPS, INITIAL_CATEGORY_GROUPS, INIT
 
 const STORAGE_KEY = 'bluefinance_pro_data_v9';
 
+const generateId = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 const DEFAULT_SETTINGS: AppSettings = {
   defaultCurrency: 'VND',
   theme: 'blue',
@@ -89,13 +96,13 @@ export const useFinanceStore = () => {
       const newTransactions: Transaction[] = [];
       if (transactionData.type === 'Transfer' && transactionData.toAccountId) {
         newTransactions.push(
-          { ...transactionData, id: crypto.randomUUID(), amount: -Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đi)` },
-          { ...transactionData, id: crypto.randomUUID(), accountId: transactionData.toAccountId, amount: Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đến)` }
+          { ...transactionData, id: generateId(), amount: -Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đi)` },
+          { ...transactionData, id: generateId(), accountId: transactionData.toAccountId, amount: Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đến)` }
         );
       } else {
         newTransactions.push({ 
           ...transactionData, 
-          id: crypto.randomUUID(), 
+          id: generateId(), 
           amount: transactionData.type === 'Expense' ? -Math.abs(transactionData.amount) : Math.abs(transactionData.amount) 
         });
       }
@@ -158,14 +165,14 @@ export const useFinanceStore = () => {
     setState(prev => ({ ...prev, deletedTransactions: prev.deletedTransactions.filter(t => t.id !== id) }));
   }, []);
 
-  const addLabel = useCallback((name: string) => setState(prev => ({ ...prev, labels: [...prev.labels, { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() }] })), []);
+  const addLabel = useCallback((name: string) => setState(prev => ({ ...prev, labels: [...prev.labels, { id: generateId(), name, createdAt: new Date().toISOString() }] })), []);
   const deleteLabel = useCallback((id: string) => setState(prev => ({ ...prev, labels: prev.labels.filter(l => l.id !== id) })), []);
   const updateLabel = useCallback((id: string, name: string) => setState(prev => ({ ...prev, labels: prev.labels.map(l => l.id === id ? { ...l, name } : l) })), []);
 
   const addAccount = useCallback((account: Omit<Account, 'id'>) => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     setState(prev => {
-      const initTransaction: Transaction = { id: crypto.randomUUID(), date: new Date().toISOString(), amount: account.balanceStart, type: 'Income', categoryId: 'cat-13', accountId: id, note: `Số dư đầu: ${account.name}`, labels: [], status: 'Reconciled' };
+      const initTransaction: Transaction = { id: generateId(), date: new Date().toISOString(), amount: account.balanceStart, type: 'Income', categoryId: 'cat-13', accountId: id, note: `Số dư đầu: ${account.name}`, labels: [], status: 'Reconciled' };
       const updatedAccounts = [...prev.accounts, { ...account, id, balanceNew: account.balanceStart }];
       const updatedTransactions = [initTransaction, ...prev.transactions];
       return { ...prev, accounts: recalculateBalances(updatedTransactions, updatedAccounts), transactions: updatedTransactions };
@@ -175,15 +182,15 @@ export const useFinanceStore = () => {
   const updateAccount = useCallback((id: string, updates: Partial<Account>) => setState(prev => ({ ...prev, accounts: prev.accounts.map(a => a.id === id ? { ...a, ...updates } : a) })), []);
   const deleteAccount = useCallback((id: string) => setState(prev => ({ ...prev, accounts: prev.accounts.filter(a => a.id !== id) })), []);
 
-  const addCategory = useCallback((cat: Omit<Category, 'id'>) => setState(prev => ({ ...prev, categories: [...prev.categories, { ...cat, id: crypto.randomUUID() }] })), []);
+  const addCategory = useCallback((cat: Omit<Category, 'id'>) => setState(prev => ({ ...prev, categories: [...prev.categories, { ...cat, id: generateId() }] })), []);
   const updateCategory = useCallback((id: string, updates: Partial<Category>) => setState(prev => ({ ...prev, categories: prev.categories.map(c => c.id === id ? { ...c, ...updates } : c) })), []);
   const deleteCategory = useCallback((id: string) => setState(prev => ({ ...prev, categories: prev.categories.filter(c => c.id !== id) })), []);
 
-  const addAccountGroup = useCallback((g: Omit<AccountGroup, 'id'>) => setState(prev => ({ ...prev, accountGroups: [...prev.accountGroups, { ...g, id: crypto.randomUUID() }] })), []);
+  const addAccountGroup = useCallback((g: Omit<AccountGroup, 'id'>) => setState(prev => ({ ...prev, accountGroups: [...prev.accountGroups, { ...g, id: generateId() }] })), []);
   const updateAccountGroup = useCallback((id: string, u: Partial<AccountGroup>) => setState(prev => ({ ...prev, accountGroups: prev.accountGroups.map(g => g.id === id ? { ...g, ...u } : g) })), []);
   const deleteAccountGroup = useCallback((id: string) => setState(prev => ({ ...prev, accountGroups: prev.accountGroups.filter(g => g.id !== id) })), []);
 
-  const addCategoryGroup = useCallback((g: Omit<CategoryGroup, 'id'>) => setState(prev => ({ ...prev, categoryGroups: [...prev.categoryGroups, { ...g, id: crypto.randomUUID() }] })), []);
+  const addCategoryGroup = useCallback((g: Omit<CategoryGroup, 'id'>) => setState(prev => ({ ...prev, categoryGroups: [...prev.categoryGroups, { ...g, id: generateId() }] })), []);
   const updateCategoryGroup = useCallback((id: string, u: Partial<CategoryGroup>) => setState(prev => ({ ...prev, categoryGroups: prev.categoryGroups.map(g => g.id === id ? { ...g, ...u } : g) })), []);
   const deleteCategoryGroup = useCallback((id: string) => setState(prev => ({ ...prev, categoryGroups: prev.categoryGroups.filter(g => g.id !== id) })), []);
 
