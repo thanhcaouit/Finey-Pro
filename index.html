@@ -7,6 +7,7 @@
     <title>BlueFinance Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./index.css">
+    <!-- Sử dụng script nạp Tailwind an toàn hơn -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -19,7 +20,7 @@
         },
       }
     </script>
-<script type="importmap">
+    <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@19.0.0",
@@ -37,5 +38,7 @@
 </head>
 <body>
     <div id="root"></div>
+    <!-- Đảm bảo file logic chính được nạp cuối cùng -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

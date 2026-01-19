@@ -3,13 +3,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { Transaction, Account, AccountGroup, CategoryGroup, Category, FinanceState, Label, AppSettings } from '../types';
 import { INITIAL_ACCOUNTS, INITIAL_ACCOUNT_GROUPS, INITIAL_CATEGORY_GROUPS, INITIAL_CATEGORIES, INITIAL_TRANSACTIONS, INITIAL_LABELS } from '../constants';
 
-const STORAGE_KEY = 'bluefinance_pro_data_v9';
+const STORAGE_KEY = 'bluefinance_pro_data_v10'; // Tăng version để tránh dữ liệu cũ bị xung đột
 
 const generateId = () => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  try {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+  } catch (e) {}
+  return 'id-' + Math.random().toString(36).substring(2, 11) + '-' + Date.now().toString(36);
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -48,16 +50,24 @@ export const useFinanceStore = () => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Kiểm tra tính toàn vẹn cơ bản của dữ liệu nạp vào
+        if (parsed && Array.isArray(parsed.accounts) && Array.isArray(parsed.transactions)) {
+          return parsed;
+        }
       }
     } catch (e) {
-      console.error("Lỗi khi đọc dữ liệu từ localStorage, đang dùng dữ liệu mặc định:", e);
+      console.warn("Dữ liệu lưu trữ không hợp lệ, đang khởi tạo lại...");
     }
     return getInitialState();
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error("Không thể lưu dữ liệu vào localStorage:", e);
+    }
   }, [state]);
 
   const updateSettings = useCallback((updates: Partial<AppSettings>) => {
