@@ -1,0 +1,5 @@
+{
+  "name": "MoneyLog",
+  "description": "A comprehensive financial management application inspired by Bluecoins, featuring transaction tracking, account management, budget analytics, and AI-powered financial insights.",
+  "requestFramePermissions": []
+}
