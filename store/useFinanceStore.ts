@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Transaction, Account, AccountGroup, CategoryGroup, Category, FinanceState, Label, AppSettings } from '../types';
 import { INITIAL_ACCOUNTS, INITIAL_ACCOUNT_GROUPS, INITIAL_CATEGORY_GROUPS, INITIAL_CATEGORIES, INITIAL_TRANSACTIONS, INITIAL_LABELS } from '../constants';
 
-const STORAGE_KEY = 'bluefinance_pro_data_v8_settings';
+const STORAGE_KEY = 'bluefinance_pro_data_v9';
 
 const DEFAULT_SETTINGS: AppSettings = {
   defaultCurrency: 'VND',
@@ -14,32 +14,39 @@ const DEFAULT_SETTINGS: AppSettings = {
   rememberLastCurrency: true,
 };
 
+const getInitialState = (): FinanceState => {
+  const transactions = INITIAL_TRANSACTIONS;
+  const accounts = INITIAL_ACCOUNTS.map(acc => {
+    const balanceFromTransactions = transactions
+      .filter(t => t.accountId === acc.id)
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    return { ...acc, balanceNew: acc.balanceStart + balanceFromTransactions };
+  });
+
+  return {
+    transactions,
+    deletedTransactions: [],
+    accounts,
+    accountGroups: INITIAL_ACCOUNT_GROUPS,
+    categoryGroups: INITIAL_CATEGORY_GROUPS,
+    categories: INITIAL_CATEGORIES,
+    labels: INITIAL_LABELS,
+    settings: DEFAULT_SETTINGS,
+  };
+};
+
 export const useFinanceStore = () => {
   const [state, setState] = useState<FinanceState>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      return JSON.parse(saved);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Lỗi khi đọc dữ liệu từ localStorage, đang dùng dữ liệu mặc định:", e);
     }
-
-    const transactions = INITIAL_TRANSACTIONS;
-    const accounts = INITIAL_ACCOUNTS.map(acc => {
-      const balanceFromTransactions = transactions
-        .filter(t => t.accountId === acc.id)
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      return { ...acc, balanceNew: acc.balanceStart + balanceFromTransactions };
-    });
-
-    return {
-      transactions,
-      deletedTransactions: [],
-      accounts,
-      accountGroups: INITIAL_ACCOUNT_GROUPS,
-      categoryGroups: INITIAL_CATEGORY_GROUPS,
-      categories: INITIAL_CATEGORIES,
-      labels: INITIAL_LABELS,
-      settings: DEFAULT_SETTINGS,
-    };
+    return getInitialState();
   });
 
   useEffect(() => {
@@ -64,7 +71,6 @@ export const useFinanceStore = () => {
 
   const resetTransactions = useCallback(() => {
     setState(prev => {
-      // Đặt lại số dư hiện tại bằng số dư đầu kỳ cho tất cả tài khoản
       const resetAccounts = prev.accounts.map(acc => ({
         ...acc,
         balanceNew: acc.balanceStart
@@ -81,19 +87,22 @@ export const useFinanceStore = () => {
   const addTransaction = useCallback((transactionData: Omit<Transaction, 'id'>) => {
     setState(prev => {
       const newTransactions: Transaction[] = [];
-      const id = crypto.randomUUID();
       if (transactionData.type === 'Transfer' && transactionData.toAccountId) {
-        const outEntry: Transaction = { ...transactionData, id: crypto.randomUUID(), amount: -Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đi)` };
-        const inEntry: Transaction = { ...transactionData, id: crypto.randomUUID(), accountId: transactionData.toAccountId, amount: Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đến)` };
-        newTransactions.push(outEntry, inEntry);
+        newTransactions.push(
+          { ...transactionData, id: crypto.randomUUID(), amount: -Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đi)` },
+          { ...transactionData, id: crypto.randomUUID(), accountId: transactionData.toAccountId, amount: Math.abs(transactionData.amount), note: `${transactionData.note} (Chuyển đến)` }
+        );
       } else {
-        newTransactions.push({ ...transactionData, id, amount: transactionData.type === 'Expense' ? -Math.abs(transactionData.amount) : Math.abs(transactionData.amount) });
+        newTransactions.push({ 
+          ...transactionData, 
+          id: crypto.randomUUID(), 
+          amount: transactionData.type === 'Expense' ? -Math.abs(transactionData.amount) : Math.abs(transactionData.amount) 
+        });
       }
       
       const updatedTransactions = [...newTransactions, ...prev.transactions];
       const updatedAccounts = recalculateBalances(updatedTransactions, prev.accounts);
       
-      // Update "Remember Last" logic
       const settingsUpdates: Partial<AppSettings> = {};
       if (prev.settings.rememberLastAccount) settingsUpdates.lastAccountId = transactionData.accountId;
       if (prev.settings.rememberLastCategory) settingsUpdates.lastCategoryId = transactionData.categoryId;
